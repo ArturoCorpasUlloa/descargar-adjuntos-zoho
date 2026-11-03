@@ -11,6 +11,7 @@ from tkinter import filedialog, END
 import ttkbootstrap as tb
 from ttkbootstrap.constants import *
 from ttkbootstrap.dialogs import Messagebox
+from ttkbootstrap.widgets.scrolled import ScrolledText
 import fitz  # PyMuPDF para máxima velocidad en la unificación
 
 # --- CONFIGURACIÓN DE ZOHO MAIL ---
@@ -80,6 +81,13 @@ class ZohoPDFDownloaderApp(tb.Window):
             command=self.start_connect_thread
         )
         self.btn_connect.grid(row=0, column=2, rowspan=3, padx=10, pady=3, sticky=NSEW)
+        self.btn_demo = tb.Button(
+            cred_frame,
+            text="Vista demo",
+            bootstyle="warning-outline",
+            command=self._load_demo_data
+        )
+        self.btn_demo.grid(row=0, column=3, rowspan=3, padx=5, pady=3, sticky=NSEW)
         cred_frame.columnconfigure(1, weight=1)
 
         # Ubicación y Filtros
@@ -149,7 +157,7 @@ class ZohoPDFDownloaderApp(tb.Window):
         log_frame = tb.Labelframe(self, text=" Consola de Estado ", padding=10)
         log_frame.pack(fill=BOTH, expand=True, padx=15, pady=10)
 
-        self.txt_log = tb.ScrolledText(log_frame, height=10, font=("Consolas", 9))
+        self.txt_log = ScrolledText(log_frame, height=10, font=("Consolas", 9))
         self.txt_log.pack(fill=BOTH, expand=True)
 
     def _bind_clipboard_fixes(self):
@@ -197,6 +205,30 @@ class ZohoPDFDownloaderApp(tb.Window):
         if folder:
             self.ent_output.delete(0, END)
             self.ent_output.insert(0, folder)
+
+    def _load_demo_data(self):
+        """Carga datos ficticios para demostrar la interfaz sin conectarse a Zoho."""
+        self.ent_email.delete(0, END)
+        self.ent_email.insert(0, "demo.usuario@ejemplo.com")
+        self.ent_pass.delete(0, END)
+        self.ent_pass.insert(0, "••••••••")
+        folders = ["INBOX", "INBOX/Facturas", "INBOX/Soportes", "Archivados/2026"]
+        self.cbo_folders["values"] = folders
+        self.cbo_folders.current(0)
+        self.btn_run.config(state=NORMAL)
+        demo_messages = [
+            "MODO DEMOSTRACIÓN: no se realizó conexión con Zoho.",
+            "Cuenta simulada: demo.usuario@ejemplo.com",
+            "Se encontraron 4 carpetas/subcarpetas (datos ficticios).",
+            "INBOX · 3 mensajes · 2 adjuntos PDF",
+            "INBOX/Facturas · 5 mensajes · 5 adjuntos PDF",
+            "INBOX/Soportes · 2 mensajes · 1 adjunto PDF",
+            "Archivados/2026 · 8 mensajes · 4 adjuntos PDF",
+        ]
+        self.txt_log.delete("1.0", END)
+        for message in demo_messages:
+            self.txt_log.insert(END, f"[DEMO] {message}\n")
+        self.txt_log.see(END)
 
     def decode_str(self, header_value):
         if not header_value:
